@@ -16,8 +16,8 @@
 </div>
 
 <p align="center">
-  <img src=".github/assets/rubikey-main-screen.png" alt="RubiKey 主页面" width="48%" />
-  <img src=".github/assets/rubikey-action-editor.png" alt="RubiKey 动作编辑" width="48%" />
+  <img src=".github/assets/rubikey-main-screen.png" alt="RubiKey 主页面" height="480" />&emsp;&emsp;
+  <img src=".github/assets/rubikey-action-editor.png" alt="RubiKey 动作编辑" height="480" />
 </p>
 
 ---
