@@ -4,4 +4,5 @@
     <string name="accessibility_service_description">将已配置的蓝牙魔方转动转换为点击或滑动。不会读取屏幕内容。</string>
     <string name="connected_notification_channel">魔方连接</string>
     <string name="connected_notification_title">RubiKey 正在保持魔方连接</string>
+    <string name="github_repository_url">https://github.com/huizhiLLL/RubiKey-Android</string>
 </resources>

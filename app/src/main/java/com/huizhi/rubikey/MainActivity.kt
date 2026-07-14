@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
@@ -30,9 +31,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -59,6 +62,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -84,9 +89,11 @@ class MainActivity : ComponentActivity() {
 @Composable
 private fun RubiKeyApp() {
     val context = LocalContext.current
+    val repositoryUrl = stringResource(R.string.github_repository_url)
     val repository = remember { ActionMappingRepository(context) }
     var loaded by remember { mutableStateOf(repository.load()) }
     var editedMove by remember { mutableStateOf<CubeMove?>(null) }
+    var showAbout by rememberSaveable { mutableStateOf(false) }
     var permissionMessage by rememberSaveable { mutableStateOf<String?>(null) }
     val bleState by CubeBleService.state.collectAsState()
     val accessibilityEnabled by RubiKeyAccessibilityService.enabled.collectAsState()
@@ -133,12 +140,19 @@ private fun RubiKeyApp() {
     val connectionText = when (connectedDevice?.connectionStatus) {
         CubeConnectionStatus.CONNECTING -> "正在连接 ${connectedDevice.name}"
         CubeConnectionStatus.CONNECTED -> "已连接 ${connectedDevice.name}"
-        else -> if (bleState.scanning) "正在扫描附近 Moyu32" else "未连接"
+        else -> if (bleState.scanning) "正在扫描附近设备" else "未连接"
     }
     val isConnecting = connectedDevice?.connectionStatus == CubeConnectionStatus.CONNECTING
     val isConnected = connectedDevice?.connectionStatus == CubeConnectionStatus.CONNECTED
 
-    Scaffold(topBar = { TopAppBar(title = { Text("RubiKey") }) }) { padding ->
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("RubiKey") },
+                actions = { TextButton(onClick = { showAbout = true }) { Text("关于") } },
+            )
+        },
+    ) { padding ->
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(
@@ -208,6 +222,83 @@ private fun RubiKeyApp() {
             onDismiss = { editedMove = null },
         )
     }
+    if (showAbout) {
+        AboutDialog(
+            repositoryUrl = repositoryUrl,
+            onRepositoryClick = {
+                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(repositoryUrl)))
+            },
+            onDismiss = { showAbout = false },
+        )
+    }
+}
+
+@Composable
+private fun AboutDialog(
+    repositoryUrl: String,
+    onRepositoryClick: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("关于") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                AboutInfoRow(label = "应用", value = "RubiKey")
+                AboutInfoRow(label = "作者", value = "huizhiLLL")
+                HorizontalDivider()
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("开源仓库", style = MaterialTheme.typography.labelLarge)
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable(onClick = onRepositoryClick)
+                            .semantics { contentDescription = "打开 GitHub 开源仓库" },
+                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        shape = RoundedCornerShape(6.dp),
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_github),
+                                contentDescription = "GitHub",
+                                tint = MaterialTheme.colorScheme.onSurface,
+                            )
+                            Spacer(Modifier.width(12.dp))
+                            Text(
+                                repositoryUrl,
+                                modifier = Modifier.weight(1f),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                softWrap = true,
+                            )
+                        }
+                    }
+                    Text(
+                        "如果这个项目对你有帮助，希望能点个 Star 支持一下～",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                HorizontalDivider()
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text("开源协议", style = MaterialTheme.typography.labelLarge)
+                    Text("GPLv3", style = MaterialTheme.typography.bodyLarge)
+                }
+            }
+        },
+        confirmButton = { TextButton(onClick = onDismiss) { Text("关闭") } },
+    )
+}
+
+@Composable
+private fun AboutInfoRow(label: String, value: String) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(label, modifier = Modifier.width(72.dp), style = MaterialTheme.typography.labelLarge)
+        Text(value, style = MaterialTheme.typography.bodyLarge)
+    }
 }
 
 @Composable
@@ -254,7 +345,7 @@ private fun DeviceSection(
         SectionHeading("附近设备")
         if (devices.isEmpty()) {
             Text(
-                "正在搜索附近可连接的 Moyu32",
+                "正在搜索附近可连接的设备",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
