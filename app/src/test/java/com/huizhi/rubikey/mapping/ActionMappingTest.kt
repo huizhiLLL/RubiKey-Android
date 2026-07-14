@@ -6,9 +6,9 @@ import org.junit.Assert.assertThrows
 import org.junit.Test
 
 class ActionMappingTest {
-    @Test fun `empty mapping covers every standard move`() {
+    @Test fun `empty mapping covers every Moyu32 move`() {
         val mapping = ActionMapping.empty()
-        assertEquals(CubeMove.entries.size, mapping.entries().size)
+        assertEquals(12, mapping.entries().size)
         assertEquals(CubeAction.None, mapping[CubeMove.U])
     }
 

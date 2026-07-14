@@ -55,13 +55,13 @@ CubeBleService ── CubeProtocolRegistry ── Moyu32CubeProtocol
 
 ### 魔方状态
 
-- `CubeMove` 使用稳定的 18 种三阶转动：`U/U2/U'`、`R/R2/R'`、`F/F2/F'`、`D/D2/D'`、`L/L2/L'`、`B/B2/B'`。
+- `CubeMove` 使用 Moyu32 可报告的 12 种单步转动：`U/U'`、`R/R'`、`F/F'`、`D/D'`、`L/L'`、`B/B'`。
 - `CubeStateTracker` 只保留协议校验、状态同步和历史转动补回需要的数据，不承载计时、成绩、训练或求解业务。
 - 协议原始编号必须在协议层转换为 `CubeMove`，业务层不识别品牌编号。
 
 ### 映射与持久化
 
-- 每个 `CubeMove` 对应一个 `NONE`、`TAP` 或 `SWIPE`。
+- 每个 `CubeMove` 对应一个 `NONE`、`TAP` 或四向预设 `SWIPE`。
 - 坐标保存为 `[0, 1]` 闭区间内的归一化值。
 - POC 使用 `SharedPreferences` 保存带 `schemaVersion = 1` 的 JSON，不引入数据库。
 - 所有转动初始值均为 `NONE`；读取失败时拒绝加载损坏配置并回退为空映射，同时记录可见错误。
@@ -85,4 +85,3 @@ CubeBleService ── CubeProtocolRegistry ── Moyu32CubeProtocol
 ## 许可证边界
 
 协议参考仓库 DCTimer-BLE 使用 GPLv3。移植时保留原文件版权声明，并在提交记录或源码注释中标明来源。分享 APK 时同步提供与该 APK 对应的完整源码和 GPLv3 许可证。
-

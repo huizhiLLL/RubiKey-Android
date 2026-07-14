@@ -98,16 +98,11 @@ public final class Moyu32CubeProtocol implements CubeProtocol {
         notificationsReady = true;
         int[] requests = {161, 163, 164, 161, 163, 164};
         for (int opcode : requests) enqueueSimpleRequest(opcode);
-        enqueueGyroEnableRequest();
         enqueueSimpleRequest(163);
     }
 
     private void enqueueSimpleRequest(int opcode) {
         byte[] request = new byte[20]; request[0] = (byte) opcode; requestQueue.offer(request); sendNextRequest();
-    }
-
-    private void enqueueGyroEnableRequest() {
-        byte[] request = new byte[20]; request[0] = (byte) 172; request[2] = 1; requestQueue.offer(request); sendNextRequest();
     }
 
     private void sendNextRequest() {
@@ -125,16 +120,19 @@ public final class Moyu32CubeProtocol implements CubeProtocol {
         if (decoded.length < 16) { error("MoYu32 解密包长度不足", null); return; }
         String bits = toBits(decoded);
         int messageType = bitsAt(bits, 0, 8);
+        if (isIgnoredMessageType(messageType)) return;
         switch (messageType) {
             case 163: handleInitialState(bits); break;
             case 164: eventSink.onBatteryChanged(bitsAt(bits, 8, 8)); break;
             case 165: handleMoves(bits); break;
-            case 161:
-            case 171: break; // POC 不消费陀螺仪数据。
             default:
                 if (previousMoveCounter == -1 && tryFallbackCipher()) return;
                 error("未知 MoYu32 消息类型: " + messageType, null);
         }
+    }
+
+    static boolean isIgnoredMessageType(int messageType) {
+        return messageType == 161 || messageType == 171 || messageType == 172;
     }
 
     private void handleInitialState(String bits) {
