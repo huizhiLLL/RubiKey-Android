@@ -1,7 +1,23 @@
+import java.io.File
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
+}
+
+val releaseSigningPropertiesFile = listOf(
+    rootProject.file("key.properties"),
+    File(System.getProperty("user.home"), ".rubikey/rubikey-release.properties"),
+).firstOrNull(File::isFile)
+val releaseSigningProperties = Properties().apply {
+    releaseSigningPropertiesFile?.inputStream()?.use(::load)
+}
+val requiredReleaseSigningKeys = listOf("storeFile", "storePassword", "keyAlias", "keyPassword")
+val hasReleaseSigningConfig = requiredReleaseSigningKeys.all(releaseSigningProperties::containsKey)
+val releaseStoreFile = releaseSigningProperties.getProperty("storeFile")?.let(::File)?.let { file ->
+    if (file.isAbsolute) file else rootProject.file(file.path)
 }
 
 android {
@@ -12,19 +28,31 @@ android {
         applicationId = "com.huizhi.rubikey"
         minSdk = 31
         targetSdk = 35
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = 2
+        versionName = "0.2.0-beta.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        create("release") {
+            if (hasReleaseSigningConfig) {
+                storeFile = requireNotNull(releaseStoreFile)
+                storePassword = releaseSigningProperties.getProperty("storePassword")
+                keyAlias = releaseSigningProperties.getProperty("keyAlias")
+                keyPassword = releaseSigningProperties.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 
@@ -40,6 +68,14 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+    }
+}
+
+tasks.matching { it.name == "preReleaseBuild" }.configureEach {
+    doFirst {
+        check(hasReleaseSigningConfig) {
+            "缺少 Release 签名配置。请创建项目根目录的 key.properties，或使用 ~/.rubikey/rubikey-release.properties。"
+        }
     }
 }
 
@@ -63,4 +99,3 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 }
-

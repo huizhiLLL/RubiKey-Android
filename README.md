@@ -22,6 +22,16 @@ Moyu32 POC 已在 Android 15 真机与目标游戏完成验收。首个验证设
 
 Debug APK 输出到 `app/build/outputs/apk/debug/app-debug.apk`。
 
+## Beta 发布构建
+
+当前 Beta 版本为 `0.2.0-beta.1`。Release 构建需要本机持有签名密钥；默认读取 `~/.rubikey/rubikey-release.properties`，也支持在项目根目录放置已忽略的 `key.properties`。配置格式见 `key.properties.example`，其中的密码不得提交到 Git。
+
+```powershell
+.\gradlew.bat assembleRelease
+```
+
+签名 APK 输出到 `app/build/outputs/apk/release/app-release.apk`。侧载、更新和 GPLv3 源码交付要求见 [`docs/release.md`](docs/release.md)。
+
 ## 文档
 
 - [`docs/project.md`](docs/project.md)：项目目标、范围和当前状态

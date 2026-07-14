@@ -42,7 +42,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -186,12 +185,13 @@ private fun ActionChoice(text: String, checked: Boolean, onClick: () -> Unit) {
 private fun CoordinatePad(action: CubeAction.Tap, onChange: (CubeAction.Tap) -> Unit) {
     Text("点击位置")
     val markerColor = MaterialTheme.colorScheme.primary
+    val padColor = MaterialTheme.colorScheme.surfaceVariant
     Canvas(
         modifier = Modifier.fillMaxWidth().height(180.dp).pointerInput(Unit) {
             detectTapGestures { offset -> onChange(CubeAction.Tap(offset.x / size.width, offset.y / size.height)) }
         },
     ) {
-        drawRect(Color.LightGray)
+        drawRect(padColor)
         drawCircle(markerColor, 12.dp.toPx(), Offset(action.x * size.width, action.y * size.height))
     }
 }

@@ -31,6 +31,7 @@ RubiKey 将智能蓝牙魔方的物理转动转换为 Android 设备上的全局
 - 协议入口、映射校验和队列策略的 6 个 JVM 单元测试。
 - Moyu32 协议在 Android 15 真机上的连接、转动解析和后台事件接收验证。
 - 辅助功能手势在目标竖屏跑酷类游戏中的点击、四方向滑动、快速连续输入与映射恢复验证。
+- `0.2.0-beta.1` 的独立 Release 签名、R8 压缩构建、自适应图标和固定浅色黑白主题。
 
 后续质量项：
 
@@ -54,4 +55,6 @@ RubiKey 将智能蓝牙魔方的物理转动转换为 Android 设备上的全局
 - `.\\gradlew.bat assembleDebug` 已于 `2026-07-14` 通过，Debug APK 可正常生成。
 - `.\\gradlew.bat testDebugUnitTest` 已于 `2026-07-14` 通过，包含 6 个 JVM 单元测试。
 - `.\\gradlew.bat assembleDebug` 已于 `2026-07-14` 在 POC 代码接入后再次通过。
+- `.\\gradlew.bat assembleRelease` 已于 `2026-07-14` 通过，已生成签名的 `0.2.0-beta.1` APK。
 - 已在 Android 15 真机上完成 BLE、后台保活、辅助功能服务和外部游戏输入验收。
+- Release APK 的首次侧载与同签名覆盖升级待下一轮真机验收。

@@ -1,0 +1,5 @@
+<resources>
+    <color name="rubikey_ink">#171717</color>
+    <color name="rubikey_canvas">#FFFFFF</color>
+    <color name="launcher_icon_background">#FFFFFF</color>
+</resources>

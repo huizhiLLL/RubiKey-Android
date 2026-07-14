@@ -1,0 +1,6 @@
+# 复制为项目根目录的 key.properties，或在 ~/.rubikey/rubikey-release.properties 中创建同名文件。
+# 该文件包含密码，不能提交到 Git。
+storeFile=C:\\Users\\you\\.rubikey\\rubikey-release.jks
+storePassword=
+keyAlias=rubikey
+keyPassword=
