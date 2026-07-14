@@ -39,8 +39,17 @@ class CubeMoveTest {
         assertFalse(CubeProtocolRegistry(listOf(FakeProvider(false))).resolve(emptyList()).isSuccess)
     }
 
-    private class FakeProvider(private val serviceMatch: Boolean) : CubeProtocolProvider {
-        override val brand = CubeBrand.UNKNOWN
+    @Test fun `registry uses scanned brand to disambiguate overlapping services`() {
+        val registry = CubeProtocolRegistry(listOf(FakeProvider(true, CubeBrand.GAN), FakeProvider(true, CubeBrand.QIYI)))
+
+        assertEquals(CubeBrand.GAN, registry.resolve(emptyList(), CubeBrand.GAN).getOrThrow().brand)
+        assertEquals(CubeBrand.QIYI, registry.resolve(emptyList(), CubeBrand.QIYI).getOrThrow().brand)
+    }
+
+    private class FakeProvider(
+        private val serviceMatch: Boolean,
+        override val brand: CubeBrand = CubeBrand.UNKNOWN,
+    ) : CubeProtocolProvider {
         override fun matchesDevice(name: String?): Boolean = false
         override fun matchesServices(services: List<BluetoothGattService>): Boolean = serviceMatch
         override fun findService(services: List<BluetoothGattService>): BluetoothGattService? = null

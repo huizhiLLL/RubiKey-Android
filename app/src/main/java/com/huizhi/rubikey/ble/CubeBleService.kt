@@ -144,8 +144,9 @@ class CubeBleService : Service(), CubeEventSink {
 
         override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {
             if (status != BluetoothGatt.GATT_SUCCESS) return disconnect("GATT 服务发现失败: $status")
-            val provider = registry.resolve(gatt.services).getOrElse { return disconnect(it.message ?: "协议识别失败") }
             val device = connectedDevice ?: return disconnect("连接设备状态已丢失")
+            val provider = registry.resolve(gatt.services, device.brand)
+                .getOrElse { return disconnect(it.message ?: "协议识别失败") }
             val service = provider.findService(gatt.services) ?: return disconnect("协议服务已丢失")
             protocol = provider.create(this@CubeBleService)
             if (!protocol!!.start(gatt, service, device)) {
