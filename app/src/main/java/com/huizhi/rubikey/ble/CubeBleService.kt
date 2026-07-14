@@ -125,7 +125,8 @@ class CubeBleService : Service(), CubeEventSink {
             val name = try { device.name } catch (_: SecurityException) { null } ?: return
             val provider = registry.identify(name) ?: return
             val address = try { device.address } catch (_: SecurityException) { return }
-            discovered[address] = CubeDevice(name, address, provider.brand)
+            val protocolAddress = provider.resolveProtocolAddress(result, address)
+            discovered[address] = CubeDevice(name, address, protocolAddress, provider.brand)
             publishDevices()
         }
 
@@ -159,6 +160,7 @@ class CubeBleService : Service(), CubeEventSink {
         override fun onCharacteristicChanged(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) { protocol?.onCharacteristicChanged(characteristic) }
         override fun onCharacteristicWrite(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, status: Int) { protocol?.onCharacteristicWrite(characteristic, status) }
         override fun onDescriptorWrite(gatt: BluetoothGatt, descriptor: BluetoothGattDescriptor, status: Int) { protocol?.onDescriptorWrite(descriptor, status) }
+        override fun onMtuChanged(gatt: BluetoothGatt, mtu: Int, status: Int) { protocol?.onMtuChanged(mtu, status) }
     }
 
     override fun onMove(move: CubeMove, elapsedMs: Int) {

@@ -11,4 +11,5 @@ interface CubeProtocol {
     fun onDescriptorWrite(descriptor: BluetoothGattDescriptor, status: Int)
     fun onCharacteristicWrite(characteristic: BluetoothGattCharacteristic, status: Int)
     fun onCharacteristicChanged(characteristic: BluetoothGattCharacteristic)
+    fun onMtuChanged(mtu: Int, status: Int) = Unit
 }

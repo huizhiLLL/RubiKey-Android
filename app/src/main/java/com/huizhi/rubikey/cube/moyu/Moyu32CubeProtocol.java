@@ -45,7 +45,7 @@ public final class Moyu32CubeProtocol implements CubeProtocol {
         clear();
         this.gatt = gatt;
         this.deviceName = device.getName().trim();
-        this.protocolAddress = device.getAddress();
+        this.protocolAddress = device.getProtocolAddress();
         readCharacteristic = service.getCharacteristic(READ_UUID);
         writeCharacteristic = service.getCharacteristic(WRITE_UUID);
         if (readCharacteristic == null || writeCharacteristic == null) {
@@ -92,6 +92,8 @@ public final class Moyu32CubeProtocol implements CubeProtocol {
         if (value == null || value.length < 16) { error("MoYu32 收到非法数据包长度", null); return; }
         try { parseData(value); } catch (Exception e) { error("MoYu32 数据解析失败", e); }
     }
+
+    @Override public void onMtuChanged(int mtu, int status) { }
 
     private void onNotificationsEnabled() {
         if (notificationsReady) return;
