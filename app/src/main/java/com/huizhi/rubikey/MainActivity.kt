@@ -165,7 +165,7 @@ private fun RubiKeyApp() {
                     },
                 )
             }
-            if (bleState.scanning || bleState.devices.isNotEmpty()) {
+            if (!isConnected && (bleState.scanning || bleState.devices.isNotEmpty())) {
                 item {
                     DeviceSection(
                         devices = bleState.devices,
@@ -224,14 +224,14 @@ private fun RunStatusSection(
     onAccessibilitySettings: () -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        SectionHeading("运行状态", "连接后即可在后台接收魔方输入")
+        SectionHeading("状态")
         StatusLine("蓝牙", connectionText)
         if (scanning) LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
         when {
             scanning -> OutlinedButton(onClick = onStopScan, modifier = Modifier.fillMaxWidth()) { Text("停止扫描") }
             connecting -> OutlinedButton(onClick = onDisconnect, modifier = Modifier.fillMaxWidth()) { Text("取消连接") }
             connected -> OutlinedButton(onClick = onDisconnect, modifier = Modifier.fillMaxWidth()) { Text("断开连接") }
-            else -> Button(onClick = onScan, modifier = Modifier.fillMaxWidth()) { Text("扫描附近 Moyu32") }
+            else -> Button(onClick = onScan, modifier = Modifier.fillMaxWidth()) { Text("扫描附近设备") }
         }
         permissionMessage?.let { message -> InlineMessage("权限", message) }
         HorizontalDivider()
@@ -251,7 +251,7 @@ private fun DeviceSection(
     onConnect: (CubeDevice) -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        SectionHeading("已发现设备", if (scanning) "扫描中，选择设备后开始连接" else "选择设备以重新连接")
+        SectionHeading("附近设备")
         if (devices.isEmpty()) {
             Text(
                 "正在搜索附近可连接的 Moyu32",
@@ -296,7 +296,7 @@ private fun DeviceRow(device: CubeDevice, onClick: () -> Unit) {
 @Composable
 private fun MappingSection(mapping: ActionMapping, onEdit: (CubeMove) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        SectionHeading("转动映射", "每个单步转动对应一次点击、预设滑动或无动作")
+        SectionHeading("转动映射")
         CubeMove.entries.chunked(2).forEach { moves ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -362,14 +362,16 @@ private fun DiagnosticsSection(diagnostics: List<DiagnosticItem>) {
 }
 
 @Composable
-private fun SectionHeading(title: String, description: String) {
+private fun SectionHeading(title: String, description: String? = null) {
     Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
         Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-        Text(
-            description,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+        description?.let {
+            Text(
+                it,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
     }
 }
 
@@ -461,11 +463,20 @@ private fun SwipePresetSelector(selected: CubeAction.Swipe, onChange: (CubeActio
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 presets.forEach { preset ->
-                    OutlinedButton(
-                        onClick = { onChange(preset.action) },
-                        modifier = Modifier.weight(1f),
-                    ) {
-                        Text(preset.label)
+                    if (preset.matches(selected)) {
+                        Button(
+                            onClick = { onChange(preset.action) },
+                            modifier = Modifier.weight(1f),
+                        ) {
+                            Text(preset.label)
+                        }
+                    } else {
+                        OutlinedButton(
+                            onClick = { onChange(preset.action) },
+                            modifier = Modifier.weight(1f),
+                        ) {
+                            Text(preset.label)
+                        }
                     }
                 }
             }
