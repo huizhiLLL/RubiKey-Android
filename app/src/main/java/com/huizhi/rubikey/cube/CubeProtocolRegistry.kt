@@ -17,6 +17,6 @@ class CubeProtocolRegistry(providers: List<CubeProtocolProvider>) {
     }
 
     companion object {
-        val default = CubeProtocolRegistry(listOf(Moyu32ProtocolProvider()))
+        val default = CubeProtocolRegistry(listOf(Moyu32ProtocolProvider(), GanProtocolProvider()))
     }
 }
