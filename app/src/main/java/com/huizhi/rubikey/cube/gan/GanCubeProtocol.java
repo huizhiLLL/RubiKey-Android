@@ -177,7 +177,11 @@ public final class GanCubeProtocol implements CubeProtocol {
             int[] offsets = new int[7];
             for (int i = 0; i < 7; i++) {
                 int raw = bitsAt(bits, 12 + i * 5, 5);
-                moves[i] = raw < 12 ? mapAxisPower(raw >> 1, raw & 1) : null;
+                if (raw >= 12) {
+                    fail("GAN v2 收到未知转动编号: " + raw, null);
+                    return;
+                }
+                moves[i] = mapAxisPower(raw >> 1, raw & 1);
                 offsets[i] = bitsAt(bits, 47 + i * 16, 16);
             }
             for (int i = difference - 1; i >= 0; i--) if (moves[i] != null) eventSink.onMove(moves[i], offsets[i]);
@@ -249,8 +253,10 @@ public final class GanCubeProtocol implements CubeProtocol {
             int axis = bitsAt(bits, offset + i * 4, 3);
             int power = bitsAt(bits, offset + i * 4 + 3, 1);
             CubeMove move = mapHistoryMove(axis, power);
-            if (move != null) pendingMoves.putIfAbsent((startCounter - i) & 0xff,
-                    new MoveEvent(move, null, System.currentTimeMillis()));
+            int counter = (startCounter - i) & 0xff;
+            if (move != null && isCounterInForwardRange(previousMoveCounter, latestMoveCounter, counter)) {
+                pendingMoves.putIfAbsent(counter, new MoveEvent(move, null, System.currentTimeMillis()));
+            }
         }
         requestedHistoryEnd = -1;
         drainPending();
@@ -358,6 +364,13 @@ public final class GanCubeProtocol implements CubeProtocol {
         if (axis < 0 || axis >= 6) return null;
         int mappedAxis = "URFDLB".indexOf("DUBFLR".charAt(axis));
         return mapAxisPower(mappedAxis, power);
+    }
+
+    static boolean isCounterInForwardRange(int start, int end, int candidate) {
+        if (start < 0 || end < 0) return false;
+        int totalDistance = (end - start) & 0xff;
+        int candidateDistance = (candidate - start) & 0xff;
+        return candidateDistance > 0 && candidateDistance <= totalDistance;
     }
 
     static int[][] parseV4MoveFrames(byte[] decoded) {

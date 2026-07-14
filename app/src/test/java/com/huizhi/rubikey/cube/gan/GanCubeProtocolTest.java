@@ -50,6 +50,16 @@ public class GanCubeProtocolTest {
         assertArrayEquals(payload, cipher.decode(cipher.encode(payload)));
     }
 
+    @Test public void historyRangeExcludesBaselineAndHandlesCounterWrap() {
+        assertFalse(GanCubeProtocol.isCounterInForwardRange(10, 13, 10));
+        assertTrue(GanCubeProtocol.isCounterInForwardRange(10, 13, 11));
+        assertTrue(GanCubeProtocol.isCounterInForwardRange(10, 13, 13));
+        assertFalse(GanCubeProtocol.isCounterInForwardRange(10, 13, 14));
+        assertTrue(GanCubeProtocol.isCounterInForwardRange(254, 1, 255));
+        assertTrue(GanCubeProtocol.isCounterInForwardRange(254, 1, 0));
+        assertTrue(GanCubeProtocol.isCounterInForwardRange(254, 1, 1));
+    }
+
     private static void putV4Frame(byte[] target, int offset, int counter, int timestamp, int power, int axisMask) {
         target[offset] = 0x01;
         target[offset + 2] = (byte) timestamp;
