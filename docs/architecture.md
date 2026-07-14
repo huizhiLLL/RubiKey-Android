@@ -12,10 +12,11 @@
 Compose UI
     │ 用户命令 / 只读状态
     ▼
-CubeBleService ── CubeProtocolRegistry ── Moyu32CubeProtocol
-    │                                      │
-    │ 连接状态                             │ CubeEventSink
-    └──────────────────┬───────────────────┘
+CubeBleService ── CubeProtocolRegistry ─┬─ Moyu32CubeProtocol
+    │                                    ├─ GanCubeProtocol
+    │ 连接状态                           └─ QiyiCubeProtocol
+    │                                          │ CubeEventSink
+    └──────────────────┬───────────────────────┘
                        ▼
              ActionMappingRepository
                        │
@@ -47,17 +48,21 @@ CubeBleService ── CubeProtocolRegistry ── Moyu32CubeProtocol
 
 ### 多品牌协议入口
 
-- `CubeProtocol` 定义启动、清理和 GATT 回调入口。
+- `CubeProtocol` 定义启动、清理、MTU 和 GATT 回调入口。
 - `CubeProtocolProvider` 定义扫描结果识别、服务确认和协议创建。
-- `CubeProtocolRegistry` 按注册顺序选择唯一匹配的 Provider；无法识别或多重匹配都作为显式错误上报。
+- `CubeProtocolRegistry` 先按扫描名称确定品牌，再用该品牌的 GATT 服务二次确认；无法识别或多重匹配都作为显式错误上报。
 - `CubeEventSink` 输出标准转动、电量、同步状态和协议错误。
-- POC 只实现并注册 Moyu32 Provider；GAN 和 QiYi 后续以新增 Provider 的方式接入。
+- 当前注册 Moyu32、GAN 和 QiYi Provider。GAN v2/v3/v4 由 Service UUID 区分版本；QiYi 覆盖 QYSC 和 Tornado V4 智能版。
+- `CubeDevice.address` 用于建立 GATT 连接，`protocolAddress` 用于协议密钥或握手；QiYi 优先读取广播制造商数据中的协议地址，其余情况回退连接地址。
+- GAN v4 与 QiYi 可能同时出现 `fff6/fff5` 特征，禁止脱离扫描品牌仅凭这两个特征选择协议。
 
 ### 魔方状态
 
 - `CubeMove` 使用 Moyu32 可报告的 12 种单步转动：`U/U'`、`R/R'`、`F/F'`、`D/D'`、`L/L'`、`B/B'`。
 - `CubeStateTracker` 只保留协议校验、状态同步和历史转动补回需要的数据，不承载计时、成绩、训练或求解业务。
 - 协议原始编号必须在协议层转换为 `CubeMove`，业务层不识别品牌编号。
+- 单个通知内的多步转动和 history 补回必须在协议层按设备计数或时间戳排序、去重后输出。
+- QiYi 状态帧中的 future history 只用于 DCTimer 的状态预测；RubiKey 不提前输出为动作，等待对应时间戳成为当前转动。
 
 ### 映射与持久化
 

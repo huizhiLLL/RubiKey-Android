@@ -4,6 +4,8 @@ RubiKey 是一个 Android 工具客户端，用于把智能蓝牙魔方的转动
 
 Moyu32 POC 已在 Android 15 真机与目标游戏完成验收。首个验证设备为 Moyu32，首个目标场景为竖屏跑酷类游戏；具体范围与验收记录见 [`docs/poc.md`](docs/poc.md)。
 
+多品牌协议层已接入 GAN v2/v3/v4 与 QiYi QYSC/Tornado V4，沿用统一的 Provider、标准转动和动作映射链路。新增品牌当前已通过 JVM 单元测试和 Debug 构建，仍需对应真机完成连接、补帧和外部游戏输入验收。
+
 ## 技术基线
 
 - Kotlin 2.1.20 与 Jetpack Compose Material 3

@@ -37,11 +37,12 @@
 
 ## 阶段四：多品牌扩展
 
-状态：POC 通过后再评估。
+状态：协议代码与 JVM 测试已完成，待多型号真机验收。
 
-- 先接入 GAN v2/v3/v4，再接入 QiYi/Tornado V4。
-- 每个品牌只新增 Provider、协议实现和对应测试，不修改映射及辅助功能业务。
-- 复用 DCTimer-BLE 已验证的解密、历史补回和批量通知逻辑。
+- 已接入 GAN v2/v3/v4，保留独立 Service、AES 地址派生、批量通知和 history 补回逻辑。
+- 已接入 QiYi QYSC/Tornado V4，保留广播协议地址、MTU、hello/ACK、CRC 和 history 时间序列逻辑。
+- 三品牌共用标准转动、映射和辅助功能业务；扫描品牌参与 GATT 二次确认，避免重叠特征误判。
+- GAN v2/v3/v4 与 QiYi QYSC/Tornado V4 的连接、电量、快速转动、补帧、后台运行和外部游戏输入待 Android 15 真机验证。
 
 ## 阶段五：体验完善
 

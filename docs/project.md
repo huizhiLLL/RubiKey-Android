@@ -28,10 +28,13 @@ RubiKey 将智能蓝牙魔方的物理转动转换为 Android 设备上的全局
 - 标准转动模型、多品牌协议注册入口和 Moyu32 协议移植。
 - 单设备 BLE 扫描、GATT 连接、`connectedDevice` 前台服务与断开清理。
 - 动作映射 JSON 持久化、映射编辑界面和辅助功能手势串行队列。
-- 协议入口、映射校验、陀螺仪报文过滤和队列策略的 7 个 JVM 单元测试。
+- 协议入口、品牌识别、转动解析、映射校验和队列策略的 16 个 JVM 单元测试。
 - Moyu32 协议在 Android 15 真机上的连接、转动解析和后台事件接收验证。
 - 辅助功能手势在目标竖屏跑酷类游戏中的点击、四方向滑动、快速连续输入与映射恢复验证。
 - `0.2.0-beta.1` 的独立 Release 签名、R8 压缩构建、自适应图标和固定浅色黑白主题。
+- GAN v2/v3/v4 协议、品牌识别、AES 地址派生、批量通知和 history 补回代码接入。
+- QiYi QYSC/Tornado V4 协议、广播协议地址、MTU、hello/ACK、CRC 和 history 时间序列代码接入。
+- 扫描品牌与 GATT 服务联合确认，避免 GAN v4 与 QiYi 的 `fff6/fff5` 特征发生协议误判。
 
 后续质量项：
 
@@ -39,8 +42,7 @@ RubiKey 将智能蓝牙魔方的物理转动转换为 Android 设备上的全局
 
 ## POC 范围外
 
-- GAN、QiYi 或其他品牌协议实现。
-- 同时连接多个魔方。
+- 同一时间连接多个品牌或多个魔方。
 - 一个转动触发多个动作。
 - 延迟、循环、变量、条件判断或图像识别。
 - 云同步、账号、配置市场和分享协议。
@@ -53,8 +55,9 @@ RubiKey 将智能蓝牙魔方的物理转动转换为 Android 设备上的全局
 
 - 本机构建环境已确认存在 JDK 17、Gradle 8.11.1 和 Android 35 SDK。
 - `.\\gradlew.bat assembleDebug` 已于 `2026-07-14` 通过，Debug APK 可正常生成。
-- `.\\gradlew.bat testDebugUnitTest` 已于 `2026-07-14` 通过，包含 7 个 JVM 单元测试。
+- `.\\gradlew.bat testDebugUnitTest` 已于 `2026-07-14` 通过，包含 16 个 JVM 单元测试。
 - `.\\gradlew.bat assembleDebug` 已于 `2026-07-14` 在 POC 代码接入后再次通过。
 - `.\\gradlew.bat assembleRelease` 已于 `2026-07-14` 通过，已生成签名的 `0.2.0-beta.1` APK。
 - 已在 Android 15 真机上完成 BLE、后台保活、辅助功能服务和外部游戏输入验收。
 - Release APK 的首次侧载与同签名覆盖升级待下一轮真机验收。
+- GAN v2/v3/v4 与 QiYi QYSC/Tornado V4 已完成代码和 JVM 测试接入，连接、电量、快速转动、丢包补回、后台运行与目标游戏输入均待对应真机验证。
