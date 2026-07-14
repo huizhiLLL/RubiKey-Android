@@ -60,6 +60,17 @@ public class GanCubeProtocolTest {
         assertTrue(GanCubeProtocol.isCounterInForwardRange(254, 1, 1));
     }
 
+    @Test public void faceletValidationAcceptsSolvedCubiesAndRejectsDuplicatePieces() {
+        char[] bits = new char[140];
+        Arrays.fill(bits, '0');
+        for (int i = 0; i < 7; i++) putBits(bits, 12 + i * 3, 3, i);
+        for (int i = 0; i < 11; i++) putBits(bits, 47 + i * 4, 4, i);
+        assertTrue(GanCubeProtocol.validFacelet(new String(bits), 12, 33, 47, 91));
+
+        putBits(bits, 12 + 6 * 3, 3, 0);
+        assertFalse(GanCubeProtocol.validFacelet(new String(bits), 12, 33, 47, 91));
+    }
+
     private static void putV4Frame(byte[] target, int offset, int counter, int timestamp, int power, int axisMask) {
         target[offset] = 0x01;
         target[offset + 2] = (byte) timestamp;
@@ -69,5 +80,11 @@ public class GanCubeProtocolTest {
         target[offset + 6] = (byte) counter;
         target[offset + 7] = 0;
         target[offset + 8] = (byte) ((power << 6) | axisMask);
+    }
+
+    private static void putBits(char[] target, int offset, int length, int value) {
+        for (int i = 0; i < length; i++) {
+            target[offset + i] = ((value >> (length - i - 1)) & 1) == 0 ? '0' : '1';
+        }
     }
 }

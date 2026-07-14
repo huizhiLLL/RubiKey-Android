@@ -166,7 +166,8 @@ public final class GanCubeProtocol implements CubeProtocol {
     private void parseV2(String bits) {
         int mode = bitsAt(bits, 0, 4);
         if (mode == 4) {
-            synchronize(bitsAt(bits, 4, 8));
+            if (validFacelet(bits, 12, 33, 47, 91)) synchronize(bitsAt(bits, 4, 8));
+            else fail("GAN v2 初始状态校验失败", null);
         } else if (mode == 9) {
             eventSink.onBatteryChanged(bitsAt(bits, 8, 8));
         } else if (mode == 2) {
@@ -198,7 +199,11 @@ public final class GanCubeProtocol implements CubeProtocol {
             long timestamp = readLittleEndianTimestamp(bits, 24);
             addPending(counter, mapAxisMask(bitsAt(bits, 74, 6), bitsAt(bits, 72, 2)), timestamp);
         } else if (mode == 2) {
-            handleFaceletCounter(((bitsAt(bits, 32, 8) << 8) | bitsAt(bits, 24, 8)) & 0xff);
+            if (validFacelet(bits, 40, 61, 77, 121)) {
+                handleFaceletCounter(((bitsAt(bits, 32, 8) << 8) | bitsAt(bits, 24, 8)) & 0xff);
+            } else {
+                fail("GAN v3 状态校验失败", null);
+            }
         } else if (mode == 6) {
             injectHistory(bits, 32, bitsAt(bits, 24, 8), Math.max(0, (length - 1) * 2));
         } else if (mode == 16) {
@@ -214,7 +219,11 @@ public final class GanCubeProtocol implements CubeProtocol {
                 addPending(frame[0], CubeMove.Companion.fromStableIndex(frame[1]), Integer.toUnsignedLong(frame[2]));
             }
         } else if (mode == 0xed) {
-            handleFaceletCounter(((bitsAt(bits, 24, 8) << 8) | bitsAt(bits, 16, 8)) & 0xff);
+            if (validFacelet(bits, 32, 53, 69, 113)) {
+                handleFaceletCounter(((bitsAt(bits, 24, 8) << 8) | bitsAt(bits, 16, 8)) & 0xff);
+            } else {
+                fail("GAN v4 状态校验失败", null);
+            }
         } else if (mode == 0xd1) {
             injectHistory(bits, 24, bitsAt(bits, 16, 8), Math.max(0, (length - 1) * 2));
         } else if (mode == 0xef && 8 + length * 8 + 8 <= bits.length()) {
@@ -371,6 +380,61 @@ public final class GanCubeProtocol implements CubeProtocol {
         int totalDistance = (end - start) & 0xff;
         int candidateDistance = (candidate - start) & 0xff;
         return candidateDistance > 0 && candidateDistance <= totalDistance;
+    }
+
+    static boolean validFacelet(String bits, int cornerPermStart, int cornerOriStart,
+                                int edgePermStart, int edgeOriStart) {
+        if (bits == null || cornerPermStart + 21 > bits.length() || cornerOriStart + 14 > bits.length()
+                || edgePermStart + 44 > bits.length() || edgeOriStart + 11 > bits.length()) return false;
+        int[] cornerPerm = new int[8];
+        int[] cornerOri = new int[8];
+        int cornerCheck = 0xf00;
+        for (int i = 0; i < 7; i++) {
+            cornerPerm[i] = bitsAt(bits, cornerPermStart + i * 3, 3);
+            cornerOri[i] = bitsAt(bits, cornerOriStart + i * 2, 2);
+            if (cornerOri[i] > 2) return false;
+            cornerCheck -= cornerOri[i] << 3;
+            cornerCheck ^= cornerPerm[i];
+        }
+        cornerPerm[7] = cornerCheck & 7;
+        cornerOri[7] = ((cornerCheck & 0xff8) % 24) >> 3;
+
+        int[] edgePerm = new int[12];
+        int[] edgeOri = new int[12];
+        int edgeCheck = 0;
+        for (int i = 0; i < 11; i++) {
+            edgePerm[i] = bitsAt(bits, edgePermStart + i * 4, 4);
+            edgeOri[i] = bitsAt(bits, edgeOriStart + i, 1);
+            edgeCheck ^= edgePerm[i] << 1 | edgeOri[i];
+        }
+        edgePerm[11] = edgeCheck >> 1;
+        edgeOri[11] = edgeCheck & 1;
+        return isPermutation(cornerPerm, 8) && isPermutation(edgePerm, 12)
+                && orientationSum(cornerOri) % 3 == 0 && orientationSum(edgeOri) % 2 == 0
+                && permutationParity(cornerPerm) == permutationParity(edgePerm);
+    }
+
+    private static boolean isPermutation(int[] values, int size) {
+        boolean[] seen = new boolean[size];
+        for (int value : values) {
+            if (value < 0 || value >= size || seen[value]) return false;
+            seen[value] = true;
+        }
+        return true;
+    }
+
+    private static int orientationSum(int[] values) {
+        int sum = 0;
+        for (int value : values) sum += value;
+        return sum;
+    }
+
+    private static int permutationParity(int[] values) {
+        int inversions = 0;
+        for (int i = 0; i < values.length; i++) {
+            for (int j = i + 1; j < values.length; j++) if (values[i] > values[j]) inversions++;
+        }
+        return inversions & 1;
     }
 
     static int[][] parseV4MoveFrames(byte[] decoded) {
