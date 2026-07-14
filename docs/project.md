@@ -25,13 +25,14 @@ RubiKey 将智能蓝牙魔方的物理转动转换为 Android 设备上的全局
 - 可启动的最小 Activity 与主题入口。
 - 项目、架构、路线和 POC 文档基线。
 - GPLv3 许可证。
+- 标准转动模型、多品牌协议注册入口和 Moyu32 协议移植。
+- 单设备 BLE 扫描、GATT 连接、`connectedDevice` 前台服务与断开清理。
+- 动作映射 JSON 持久化、映射编辑界面和辅助功能手势串行队列。
+- 协议入口、映射校验和队列策略的 6 个 JVM 单元测试。
 
-尚未实现：
+待完成：
 
-- BLE 权限、扫描、连接和前台服务。
-- Moyu32 协议移植与标准转动事件。
-- 动作映射模型、持久化和编辑界面。
-- `AccessibilityService` 与全局手势执行。
+- 使用真实 Moyu32 加密报文补充协议解密、批量顺序和异常包回归测试。
 - Android 15 真机及目标游戏验收。
 
 ## POC 范围外
@@ -50,6 +51,7 @@ RubiKey 将智能蓝牙魔方的物理转动转换为 Android 设备上的全局
 
 - 本机构建环境已确认存在 JDK 17、Gradle 8.11.1 和 Android 35 SDK。
 - `.\\gradlew.bat assembleDebug` 已于 `2026-07-14` 通过，Debug APK 可正常生成。
-- `.\\gradlew.bat testDebugUnitTest` 已于 `2026-07-14` 通过；当前没有测试源码，任务结果为 `NO-SOURCE`。
+- `.\\gradlew.bat testDebugUnitTest` 已于 `2026-07-14` 通过，包含 6 个 JVM 单元测试。
+- `.\\gradlew.bat assembleDebug` 已于 `2026-07-14` 在 POC 代码接入后再次通过。
 - 当前没有连接 Android 设备。
 - BLE、辅助功能服务和外部游戏输入均待 Android 15 真机验证。

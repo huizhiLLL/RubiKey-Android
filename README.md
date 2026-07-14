@@ -2,7 +2,7 @@
 
 RubiKey 是一个 Android 工具客户端，用于把智能蓝牙魔方的转动映射为设备上的全局点击或滑动操作。应用面向个人侧载和小范围分享，不以应用商店发布为目标。
 
-当前仓库处于 POC 基线阶段。首个验证设备为 Moyu32，首个目标场景为 Android 15 上的竖屏跑酷类游戏。蓝牙连接、协议接入、辅助功能手势和映射界面尚未实现，具体实施步骤见 [`docs/poc.md`](docs/poc.md)。
+当前仓库已完成 Moyu32 POC 的代码实现，尚待 Android 15 真机和目标游戏验收。首个验证设备为 Moyu32，首个目标场景为竖屏跑酷类游戏；具体范围与验收步骤见 [`docs/poc.md`](docs/poc.md)。
 
 ## 技术基线
 
@@ -32,4 +32,3 @@ Debug APK 输出到 `app/build/outputs/apk/debug/app-debug.apk`。
 ## 许可证
 
 本项目采用 [GNU General Public License v3.0](LICENSE)。后续将复用同为 GPLv3 的 DCTimer-BLE 智能魔方协议代码；分享编译产物时应同时提供对应源码和许可证。
-
