@@ -1,6 +1,6 @@
 # RubiKey 项目状态
 
-日期：`2026-07-14`
+日期：`2026-07-15`
 
 ## 项目定位
 
@@ -10,35 +10,31 @@ RubiKey 将智能蓝牙魔方的物理转动转换为 Android 设备上的全局
 
 在 Android 15 真机上完成以下闭环：
 
-1. 扫描并连接 Moyu32 智能魔方。
+1. 扫描并连接智能魔方。
 2. 在应用退到后台后继续接收转动事件。
 3. 把标准转动映射为单次点击或滑动。
 4. 通过辅助功能服务把手势分发到竖屏跑酷类外部游戏。
-5. 在应用重启后保留动作映射。
+5. 在应用重启和同签名覆盖升级后保留动作映射。
 
 ## 当前状态
 
-已完成：
+核心功能和首个稳定版已完成：
 
-- Git 仓库初始化。
-- Kotlin、Compose 和 Android 基础构建配置。
-- 可启动的最小 Activity 与主题入口。
-- 项目、架构、路线和 POC 文档基线。
-- GPLv3 许可证。
-- 标准转动模型、多品牌协议注册入口和 Moyu32 协议移植。
-- 单设备 BLE 扫描、GATT 连接、`connectedDevice` 前台服务与断开清理。
-- 动作映射 JSON 持久化、映射编辑界面和辅助功能手势串行队列。
-- 协议入口、品牌识别、转动解析、映射校验和队列策略的 18 个 JVM 单元测试。
-- Moyu32 协议在 Android 15 真机上的连接、转动解析和后台事件接收验证。
-- 辅助功能手势在目标竖屏跑酷类游戏中的点击、四方向滑动、快速连续输入与映射恢复验证。
-- `0.2.0-beta.1` 的独立 Release 签名、R8 压缩构建、自适应图标和固定浅色黑白主题。
-- GAN v2/v3/v4 协议、品牌识别、AES 地址派生、批量通知和 history 补回代码接入。
-- QiYi QYSC/Tornado V4 协议、广播协议地址、MTU、hello/ACK、CRC 和 history 时间序列代码接入。
-- 扫描品牌与 GATT 服务联合确认，避免 GAN v4 与 QiYi 的 `fff6/fff5` 特征发生协议误判。
+- Git 仓库、Kotlin、Compose、Android 基础构建配置和 GPLv3 许可证已建立。
+- 标准转动模型、多品牌协议注册入口、Moyu32、GAN 和 QiYi 协议已接入。
+- 单设备 BLE 扫描、GATT 连接、`connectedDevice` 前台服务和断开清理已完成。
+- 动作映射 JSON 持久化、映射编辑界面和辅助功能手势串行队列已完成。
+- 协议入口、品牌识别、转动解析、映射校验和队列策略共有 18 个 JVM 单元测试。
+- Moyu32、GAN v2/v3/v4、QiYi QYSC/Tornado V4 已完成 Android 15 真机连接、转动解析、后台运行和目标游戏输入验收。
+- Release APK 已完成 R8 压缩、独立签名、自适应图标和固定浅色黑白主题。
+- `0.2.0` 稳定版使用 `versionCode = 3`，About 窗口显示当前版本号。
+- Release 构建、Release lint、APK 签名校验和发布文档已纳入收尾流程。
 
-后续质量项：
+## 后续质量项
 
-- 使用脱敏的真实 Moyu32 加密报文补充协议解密、批量顺序和异常包回归测试。
+- 使用脱敏的真实 Moyu32、GAN 和 QiYi 报文补充解密、批量顺序、补帧和异常包 golden test。
+- 根据实际用户反馈建立 Android 12-14 及不同厂商系统的兼容矩阵；当前不将 Android 15 之外的环境标记为已验收。
+- 评估动作映射导入导出、扫描/连接超时和一键重新连接等体验增强。
 
 ## POC 范围外
 
@@ -53,11 +49,11 @@ RubiKey 将智能蓝牙魔方的物理转动转换为 Android 设备上的全局
 
 ## 验证状态
 
-- 本机构建环境已确认存在 JDK 17、Gradle 8.11.1 和 Android 35 SDK。
-- `.\\gradlew.bat assembleDebug` 已于 `2026-07-14` 通过，Debug APK 可正常生成。
-- `.\\gradlew.bat testDebugUnitTest` 已于 `2026-07-14` 通过，包含 18 个 JVM 单元测试。
-- `.\\gradlew.bat assembleDebug` 已于 `2026-07-14` 在 POC 代码接入后再次通过。
-- `.\\gradlew.bat assembleRelease` 已于 `2026-07-14` 通过，已生成签名的 `0.2.0-beta.1` APK。
-- 已在 Android 15 真机上完成 BLE、后台保活、辅助功能服务和外部游戏输入验收。
-- Release APK 的首次侧载与同签名覆盖升级待下一轮真机验收。
-- GAN v2/v3/v4 与 QiYi QYSC/Tornado V4 已完成代码和 JVM 测试接入，连接、电量、快速转动、丢包补回、后台运行与目标游戏输入均待对应真机验证。
+- 本机构建环境存在 JDK 17、Gradle 8.11.1 和 Android 35 SDK。
+- `.\gradlew.bat testDebugUnitTest` 已通过，包含 18 个 JVM 单元测试。
+- `.\gradlew.bat lintRelease` 已通过，0 个 error；target 35 和 adaptive icon 目录保留平台提示 warning。
+- `.\gradlew.bat assembleDebug` 已通过，Debug APK 可正常生成。
+- `.\gradlew.bat assembleRelease` 已通过，已生成签名的 `0.2.0` APK。
+- Release APK 已通过 APK Signature Scheme v2 校验，应用包名为 `com.huizhi.rubikey`。
+- 已完成 Android 15 真机上的 BLE、后台保活、辅助功能服务和外部游戏输入验收。
+- Android 12-14、不同厂商后台策略和脱敏真实报文回归仍待后续质量验证。
