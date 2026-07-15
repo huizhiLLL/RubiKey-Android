@@ -29,39 +29,19 @@
 - 12 种转动自由配置不同的操作
 - 页面设计基于 MD3，简洁易用
 
-## 支持范围
+## 设备要求
 
-- 当前验收协议：Moyu32、GAN v2/v3/v4、QiYi QYSC/Tornado V4。
-- 当前真机验收基线：Android 15、默认显示器、竖屏场景。
-- 最低 Android 版本为 12（API 31）；Android 12-14 和不同厂商系统尚未建立完整兼容矩阵。
-- 一次只连接一个魔方；不支持横屏、多窗口、多显示器、复杂宏和云同步。
+Android 12+
 
 ## 安装与使用
 
-1. 从 [GitHub Releases](https://github.com/huizhiLLL/RubiKey-Android/releases) 下载稳定版 APK 并安装。
-2. 首次扫描时允许“附近设备”和通知权限。
-3. 在系统设置中启用 RubiKey 无障碍服务；部分 Android 13 及以上侧载设备还需要允许受限设置。
-4. 打开 RubiKey，扫描并连接已支持的智能魔方。
-5. 为 12 种转动配置点击、滑动或无动作，然后进入目标应用使用。
+1. [GitHub Releases](https://github.com/huizhiLLL/RubiKey-Android/releases) 下载 APK 并安装
+2. 进入 RubiKey，在系统设置中启用 RubiKey 无障碍服务；部分 Android 13 及以上设备需要允许受限设置
+3. 扫描并连接智能魔方
+4. 为 12 种转动配置点击或滑动，进入目标应用开始使用
 
-应用退到后台后，BLE 连接由前台服务保持；全局输入只通过用户主动启用的无障碍服务完成。覆盖升级必须继续使用同一签名密钥，才能保留已有动作映射。
+应用退到后台后，BLE 连接由前台服务保持；全局输入只通过用户主动启用的无障碍服务完成
 
-## 常见问题
-
-- 扫描不到魔方：确认蓝牙已开启、附近设备权限已允许，且魔方没有被其他应用占用。
-- 有转动但没有输入：确认无障碍服务已启用，并检查当前设备为竖屏且动作坐标位于目标应用可点击区域。
-- 覆盖升级失败：卸载了不同签名的旧版本后再安装；同签名版本可以直接覆盖升级。
-
-## 开发与构建
-
-项目使用 JDK 17、Gradle 8.11.1 和 Android SDK 35。常用验证命令：
-
-```powershell
-.\gradlew.bat testDebugUnitTest
-.\gradlew.bat lintRelease
-.\gradlew.bat assembleDebug
-.\gradlew.bat assembleRelease
-```
 
 ## 许可证
 
