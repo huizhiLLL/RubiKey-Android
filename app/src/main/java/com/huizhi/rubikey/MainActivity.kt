@@ -224,6 +224,7 @@ private fun RubiKeyApp() {
     }
     if (showAbout) {
         AboutDialog(
+            versionName = BuildConfig.VERSION_NAME,
             repositoryUrl = repositoryUrl,
             onRepositoryClick = {
                 context.startActivity(Intent(Intent.ACTION_VIEW, repositoryUrl.toUri()))
@@ -235,6 +236,7 @@ private fun RubiKeyApp() {
 
 @Composable
 private fun AboutDialog(
+    versionName: String,
     repositoryUrl: String,
     onRepositoryClick: () -> Unit,
     onDismiss: () -> Unit,
@@ -246,6 +248,7 @@ private fun AboutDialog(
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 AboutInfoRow(label = "应用", value = "RubiKey")
                 AboutInfoRow(label = "作者", value = "huizhiLLL")
+                AboutInfoRow(label = "版本", value = versionName)
                 HorizontalDivider()
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text("开源仓库", style = MaterialTheme.typography.labelLarge)
