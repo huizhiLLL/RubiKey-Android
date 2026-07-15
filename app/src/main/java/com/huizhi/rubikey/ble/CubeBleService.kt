@@ -1,5 +1,6 @@
 package com.huizhi.rubikey.ble
 
+import android.annotation.SuppressLint
 import android.Manifest
 import android.app.Notification
 import android.app.NotificationChannel
@@ -71,6 +72,7 @@ class CubeBleService : Service(), CubeEventSink {
         super.onDestroy()
     }
 
+    @SuppressLint("MissingPermission")
     private fun startScan() {
         if (!hasBluetoothPermissions()) return setError("缺少附近设备权限")
         val adapter = bluetoothAdapter() ?: return setError("设备不支持蓝牙")
@@ -78,9 +80,15 @@ class CubeBleService : Service(), CubeEventSink {
         discovered.clear(); publishDevices()
         scanner = adapter.bluetoothLeScanner ?: return setError("蓝牙扫描器不可用")
         _state.value = CubeBleUiState(scanning = true)
-        scanner?.startScan(scanCallback)
+        try {
+            scanner?.startScan(scanCallback)
+        } catch (_: SecurityException) {
+            scanner = null
+            setError("附近设备权限已被撤销")
+        }
     }
 
+    @SuppressLint("MissingPermission")
     private fun stopScan() {
         runCatching { scanner?.stopScan(scanCallback) }
         scanner = null
@@ -103,6 +111,7 @@ class CubeBleService : Service(), CubeEventSink {
         if (gatt == null) disconnect("无法发起 GATT 连接")
     }
 
+    @SuppressLint("MissingPermission")
     private fun disconnect(reason: String) {
         stopScan()
         protocol?.clear(); protocol = null
@@ -134,11 +143,17 @@ class CubeBleService : Service(), CubeEventSink {
     }
 
     private val gattCallback = object : BluetoothGattCallback() {
+        @SuppressLint("MissingPermission")
         override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
             if (status != BluetoothGatt.GATT_SUCCESS || newState != BluetoothProfile.STATE_CONNECTED) {
                 disconnect("蓝牙连接已断开: $status")
-            } else if (!gatt.discoverServices()) {
-                disconnect("无法发现 GATT 服务")
+            } else {
+                val started = try {
+                    gatt.discoverServices()
+                } catch (_: SecurityException) {
+                    return disconnect("蓝牙连接权限已被撤销")
+                }
+                if (!started) disconnect("无法发现 GATT 服务")
             }
         }
 
@@ -148,8 +163,14 @@ class CubeBleService : Service(), CubeEventSink {
             val provider = registry.resolve(gatt.services, device.brand)
                 .getOrElse { return disconnect(it.message ?: "协议识别失败") }
             val service = provider.findService(gatt.services) ?: return disconnect("协议服务已丢失")
-            protocol = provider.create(this@CubeBleService)
-            if (!protocol!!.start(gatt, service, device)) {
+            val currentProtocol = provider.create(this@CubeBleService)
+            protocol = currentProtocol
+            val started = try {
+                currentProtocol.start(gatt, service, device)
+            } catch (_: SecurityException) {
+                return disconnect("蓝牙连接权限已被撤销")
+            }
+            if (!started) {
                 disconnect("协议启动失败")
             } else {
                 connectedDevice = device.copy(connectionStatus = CubeConnectionStatus.CONNECTED)
@@ -158,10 +179,30 @@ class CubeBleService : Service(), CubeEventSink {
             }
         }
 
-        override fun onCharacteristicChanged(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) { protocol?.onCharacteristicChanged(characteristic) }
-        override fun onCharacteristicWrite(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, status: Int) { protocol?.onCharacteristicWrite(characteristic, status) }
-        override fun onDescriptorWrite(gatt: BluetoothGatt, descriptor: BluetoothGattDescriptor, status: Int) { protocol?.onDescriptorWrite(descriptor, status) }
-        override fun onMtuChanged(gatt: BluetoothGatt, mtu: Int, status: Int) { protocol?.onMtuChanged(mtu, status) }
+        override fun onCharacteristicChanged(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) {
+            runProtocolCallback { it.onCharacteristicChanged(characteristic) }
+        }
+
+        override fun onCharacteristicWrite(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, status: Int) {
+            runProtocolCallback { it.onCharacteristicWrite(characteristic, status) }
+        }
+
+        override fun onDescriptorWrite(gatt: BluetoothGatt, descriptor: BluetoothGattDescriptor, status: Int) {
+            runProtocolCallback { it.onDescriptorWrite(descriptor, status) }
+        }
+
+        override fun onMtuChanged(gatt: BluetoothGatt, mtu: Int, status: Int) {
+            runProtocolCallback { it.onMtuChanged(mtu, status) }
+        }
+    }
+
+    private fun runProtocolCallback(callback: (CubeProtocol) -> Unit) {
+        val currentProtocol = protocol ?: return
+        try {
+            callback(currentProtocol)
+        } catch (_: SecurityException) {
+            disconnect("蓝牙连接权限已被撤销")
+        }
     }
 
     override fun onMove(move: CubeMove, elapsedMs: Int) {

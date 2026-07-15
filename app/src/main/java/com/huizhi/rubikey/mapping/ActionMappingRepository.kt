@@ -1,9 +1,10 @@
 package com.huizhi.rubikey.mapping
 
 import android.content.Context
+import androidx.core.content.edit
+import com.huizhi.rubikey.cube.CubeMove
 import org.json.JSONArray
 import org.json.JSONObject
-import com.huizhi.rubikey.cube.CubeMove
 
 class ActionMappingRepository(context: Context) {
     private val preferences = context.applicationContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
@@ -18,7 +19,7 @@ class ActionMappingRepository(context: Context) {
     }
 
     fun save(mapping: ActionMapping) {
-        preferences.edit().putString(KEY_MAPPING, encode(mapping)).apply()
+        preferences.edit { putString(KEY_MAPPING, encode(mapping)) }
     }
 
     private fun encode(mapping: ActionMapping): String = JSONObject().apply {

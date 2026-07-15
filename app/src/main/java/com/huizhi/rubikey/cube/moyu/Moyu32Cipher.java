@@ -4,12 +4,15 @@
  */
 package com.huizhi.rubikey.cube.moyu;
 
+import android.annotation.SuppressLint;
 import java.security.GeneralSecurityException;
 import java.util.Arrays;
 import java.util.Locale;
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 
+/* AES/ECB is part of the Moyu32 cube wire protocol and is not application data encryption. */
+@SuppressLint("GetInstance")
 final class Moyu32Cipher {
     private static final byte[] BASE_KEY = {21, 119, 58, 92, 103, 14, 45, 31, 23, 103, 42, 19, -101, 103, 82, 87};
     private static final byte[] BASE_IV = {17, 35, 38, 37, -122, 42, 44, 59, 85, 6, 127, 49, 126, 103, 33, 87};

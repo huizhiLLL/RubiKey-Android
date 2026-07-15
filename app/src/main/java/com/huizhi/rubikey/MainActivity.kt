@@ -4,7 +4,6 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
@@ -68,6 +67,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import com.huizhi.rubikey.accessibility.RubiKeyAccessibilityService
 import com.huizhi.rubikey.ble.CubeBleService
 import com.huizhi.rubikey.cube.CubeConnectionStatus
@@ -226,7 +226,7 @@ private fun RubiKeyApp() {
         AboutDialog(
             repositoryUrl = repositoryUrl,
             onRepositoryClick = {
-                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(repositoryUrl)))
+                context.startActivity(Intent(Intent.ACTION_VIEW, repositoryUrl.toUri()))
             },
             onDismiss = { showAbout = false },
         )

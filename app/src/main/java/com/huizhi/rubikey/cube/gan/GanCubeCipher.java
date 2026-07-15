@@ -3,12 +3,15 @@
  */
 package com.huizhi.rubikey.cube.gan;
 
+import android.annotation.SuppressLint;
 import java.security.GeneralSecurityException;
 import java.util.Arrays;
 import java.util.Locale;
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 
+/* AES/ECB is part of the GAN cube wire protocol and is not application data encryption. */
+@SuppressLint("GetInstance")
 final class GanCubeCipher {
     private byte[] iv;
     private Cipher encryptCipher;

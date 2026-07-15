@@ -4,6 +4,7 @@
  */
 package com.huizhi.rubikey.cube.gan;
 
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
@@ -23,6 +24,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+/* CubeBleService checks BLUETOOTH_CONNECT before entering protocol callbacks. */
+@SuppressLint("MissingPermission")
 public final class GanCubeProtocol implements CubeProtocol {
     public static final UUID SERVICE_UUID_V2 = UUID.fromString("6e400001-b5a3-f393-e0a9-e50e24dc4179");
     public static final UUID SERVICE_UUID_V3 = UUID.fromString("8653000a-43e6-47b7-9cb0-5fc21d4ae340");

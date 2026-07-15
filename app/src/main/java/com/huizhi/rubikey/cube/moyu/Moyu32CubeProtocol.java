@@ -4,6 +4,7 @@
  */
 package com.huizhi.rubikey.cube.moyu;
 
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
@@ -19,6 +20,8 @@ import java.util.ArrayDeque;
 import java.util.Locale;
 import java.util.UUID;
 
+/* CubeBleService checks BLUETOOTH_CONNECT before entering protocol callbacks. */
+@SuppressLint("MissingPermission")
 public final class Moyu32CubeProtocol implements CubeProtocol {
     public static final UUID SERVICE_UUID = UUID.fromString("0783b03e-7735-b5a0-1760-a305d2795cb0");
     public static final UUID READ_UUID = UUID.fromString("0783b03e-7735-b5a0-1760-a305d2795cb1");

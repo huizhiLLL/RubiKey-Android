@@ -4,6 +4,7 @@
  */
 package com.huizhi.rubikey.cube.qiyi;
 
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
@@ -26,6 +27,8 @@ import java.util.UUID;
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 
+/* CubeBleService checks BLUETOOTH_CONNECT before entering protocol callbacks. */
+@SuppressLint({"MissingPermission", "GetInstance"})
 public final class QiyiCubeProtocol implements CubeProtocol {
     public static final UUID SERVICE_UUID = UUID.fromString("0000fff0-0000-1000-8000-00805f9b34fb");
     public static final UUID CUBE_UUID = UUID.fromString("0000fff6-0000-1000-8000-00805f9b34fb");
