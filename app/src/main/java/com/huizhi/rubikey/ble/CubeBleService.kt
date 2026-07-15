@@ -20,7 +20,9 @@ import android.bluetooth.le.ScanResult
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
 import androidx.core.app.NotificationCompat
 import com.huizhi.rubikey.MainActivity
 import com.huizhi.rubikey.R
@@ -47,6 +49,15 @@ class CubeBleService : Service(), CubeEventSink {
     private var gatt: BluetoothGatt? = null
     private var protocol: CubeProtocol? = null
     private var connectedDevice: CubeDevice? = null
+    private val mainHandler = Handler(Looper.getMainLooper())
+    private val scanTimeout = Runnable {
+        if (_state.value.scanning) stopScan()
+    }
+    private val connectionTimeout = Runnable {
+        if (connectedDevice?.connectionStatus == CubeConnectionStatus.CONNECTING) {
+            disconnect("蓝牙连接超时")
+        }
+    }
 
     override fun onCreate() {
         super.onCreate()
@@ -74,6 +85,7 @@ class CubeBleService : Service(), CubeEventSink {
 
     @SuppressLint("MissingPermission")
     private fun startScan() {
+        mainHandler.removeCallbacks(scanTimeout)
         if (!hasBluetoothPermissions()) return setError("缺少附近设备权限")
         val adapter = bluetoothAdapter() ?: return setError("设备不支持蓝牙")
         if (!adapter.isEnabled) return setError("蓝牙未开启")
@@ -82,6 +94,7 @@ class CubeBleService : Service(), CubeEventSink {
         _state.value = CubeBleUiState(scanning = true)
         try {
             scanner?.startScan(scanCallback)
+            mainHandler.postDelayed(scanTimeout, SCAN_TIMEOUT_MS)
         } catch (_: SecurityException) {
             scanner = null
             setError("附近设备权限已被撤销")
@@ -90,6 +103,7 @@ class CubeBleService : Service(), CubeEventSink {
 
     @SuppressLint("MissingPermission")
     private fun stopScan() {
+        mainHandler.removeCallbacks(scanTimeout)
         runCatching { scanner?.stopScan(scanCallback) }
         scanner = null
         _state.value = _state.value.copy(scanning = false)
@@ -108,11 +122,17 @@ class CubeBleService : Service(), CubeEventSink {
         } catch (error: SecurityException) {
             setError("没有蓝牙连接权限"); null
         }
-        if (gatt == null) disconnect("无法发起 GATT 连接")
+        if (gatt == null) {
+            disconnect("无法发起 GATT 连接")
+        } else {
+            mainHandler.postDelayed(connectionTimeout, CONNECTION_TIMEOUT_MS)
+        }
     }
 
     @SuppressLint("MissingPermission")
     private fun disconnect(reason: String) {
+        mainHandler.removeCallbacks(scanTimeout)
+        mainHandler.removeCallbacks(connectionTimeout)
         stopScan()
         protocol?.clear(); protocol = null
         RubiKeyAccessibilityService.clearPendingActions()
@@ -145,6 +165,7 @@ class CubeBleService : Service(), CubeEventSink {
     private val gattCallback = object : BluetoothGattCallback() {
         @SuppressLint("MissingPermission")
         override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
+            if (!isCurrentGatt(gatt)) return
             if (status != BluetoothGatt.GATT_SUCCESS || newState != BluetoothProfile.STATE_CONNECTED) {
                 disconnect("蓝牙连接已断开: $status")
             } else {
@@ -158,6 +179,7 @@ class CubeBleService : Service(), CubeEventSink {
         }
 
         override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {
+            if (!isCurrentGatt(gatt)) return
             if (status != BluetoothGatt.GATT_SUCCESS) return disconnect("GATT 服务发现失败: $status")
             val device = connectedDevice ?: return disconnect("连接设备状态已丢失")
             val provider = registry.resolve(gatt.services, device.brand)
@@ -173,6 +195,7 @@ class CubeBleService : Service(), CubeEventSink {
             if (!started) {
                 disconnect("协议启动失败")
             } else {
+                mainHandler.removeCallbacks(connectionTimeout)
                 connectedDevice = device.copy(connectionStatus = CubeConnectionStatus.CONNECTED)
                 _state.value = _state.value.copy(connectedDevice = connectedDevice)
                 startForeground(NOTIFICATION_ID, buildNotification("已连接 ${device.name}"))
@@ -180,21 +203,27 @@ class CubeBleService : Service(), CubeEventSink {
         }
 
         override fun onCharacteristicChanged(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) {
+            if (!isCurrentGatt(gatt)) return
             runProtocolCallback { it.onCharacteristicChanged(characteristic) }
         }
 
         override fun onCharacteristicWrite(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, status: Int) {
+            if (!isCurrentGatt(gatt)) return
             runProtocolCallback { it.onCharacteristicWrite(characteristic, status) }
         }
 
         override fun onDescriptorWrite(gatt: BluetoothGatt, descriptor: BluetoothGattDescriptor, status: Int) {
+            if (!isCurrentGatt(gatt)) return
             runProtocolCallback { it.onDescriptorWrite(descriptor, status) }
         }
 
         override fun onMtuChanged(gatt: BluetoothGatt, mtu: Int, status: Int) {
+            if (!isCurrentGatt(gatt)) return
             runProtocolCallback { it.onMtuChanged(mtu, status) }
         }
     }
+
+    private fun isCurrentGatt(callbackGatt: BluetoothGatt): Boolean = callbackGatt === gatt
 
     private fun runProtocolCallback(callback: (CubeProtocol) -> Unit) {
         val currentProtocol = protocol ?: return
@@ -241,6 +270,8 @@ class CubeBleService : Service(), CubeEventSink {
         const val EXTRA_ADDRESS = "address"
         private const val CHANNEL_ID = "cube_connection"
         private const val NOTIFICATION_ID = 1001
+        private const val SCAN_TIMEOUT_MS = 15_000L
+        private const val CONNECTION_TIMEOUT_MS = 15_000L
         private val _state = MutableStateFlow(CubeBleUiState())
         val state = _state.asStateFlow()
 
