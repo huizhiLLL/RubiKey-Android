@@ -32,6 +32,8 @@ Release APK 必须始终使用同一 RubiKey 专用密钥签名，否则 Android
 .\gradlew.bat assembleRelease
 ```
 
+GitHub Actions 会在 push、Pull Request 和手动触发时执行 JVM 测试、Debug lint 和 Debug 构建；Release 签名构建需要本地密钥配置。
+
 Release 产物为 `app/build/outputs/apk/release/app-release.apk`。构建后使用以下命令记录校验值：
 
 ```powershell

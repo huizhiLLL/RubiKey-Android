@@ -34,7 +34,7 @@ RubiKey 将智能蓝牙魔方的物理转动转换为 Android 设备上的全局
 
 - 使用脱敏的真实 Moyu32、GAN 和 QiYi 报文补充解密、批量顺序、补帧和异常包 golden test。
 - 根据实际用户反馈建立 Android 12-14 及不同厂商系统的兼容矩阵；当前不将 Android 15 之外的环境标记为已验收。
-- 评估动作映射导入导出、扫描/连接超时和一键重新连接等体验增强。
+- 已增加扫描/连接超时和旧 GATT 回调保护；继续评估动作映射导入导出和一键重新连接等体验增强。
 
 ## POC 范围外
 
@@ -57,3 +57,4 @@ RubiKey 将智能蓝牙魔方的物理转动转换为 Android 设备上的全局
 - Release APK 已通过 APK Signature Scheme v2 校验，应用包名为 `com.huizhi.rubikey`。
 - 已完成 Android 15 真机上的 BLE、后台保活、辅助功能服务和外部游戏输入验收。
 - Android 12-14、不同厂商后台策略和脱敏真实报文回归仍待后续质量验证。
+- GitHub Actions 已配置为自动执行 JVM 测试、Debug lint 和 Debug 构建；Release 签名构建仍在本地完成。
